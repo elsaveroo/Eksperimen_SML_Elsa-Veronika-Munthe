@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'water_potability_raw/**'
-      - 'preprocessing/automate_Farhan.py'
+      - 'preprocessing/automate_Elsa-Veronika-Munthe.py'
   workflow_dispatch:
     inputs:
       test_size:
