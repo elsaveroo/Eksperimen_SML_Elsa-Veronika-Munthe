@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'water_potability_raw/**'
-      - 'preprocessing/automate_Elsa-Veronika-Munthe.py'
+      - 'preprocessing/automate_Farhan.py'
   workflow_dispatch:
     inputs:
       test_size:
@@ -17,6 +17,9 @@ on:
         description: 'Multiplier IQR untuk outlier detection'
         required: false
         default: '1.5'
+
+permissions:
+  contents: write
 
 jobs:
   preprocessing:
@@ -46,7 +49,7 @@ jobs:
 
       - name: Run Preprocessing
         run: |
-          python preprocessing/automate_Elsa-Veronika-Munthe.py \
+          python preprocessing/automate_Farhan.py \
             --input water_potability_raw/water_potability.csv \
             --output_dir water_potability_preprocessing \
             --test_size ${{ github.event.inputs.test_size || '0.2' }} \
