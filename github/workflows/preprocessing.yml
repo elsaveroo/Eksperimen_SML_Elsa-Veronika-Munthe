@@ -1,0 +1,74 @@
+name: Automated Water Quality Preprocessing
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'water_potability_raw/**'
+      - 'preprocessing/automate_Elsa-Veronika-Munthe.py'
+  workflow_dispatch:
+    inputs:
+      test_size:
+        description: 'Proporsi data testing (0.0 - 1.0)'
+        required: false
+        default: '0.2'
+      iqr_multiplier:
+        description: 'Multiplier IQR untuk outlier detection'
+        required: false
+        default: '1.5'
+
+jobs:
+  preprocessing:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.7'
+
+      - name: Check Env
+        run: |
+          python --version
+          pip --version
+          echo "Working directory: $(pwd)"
+          echo "Files in repo:"
+          ls -la
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pandas numpy scikit-learn
+
+      - name: Run Preprocessing
+        run: |
+          python preprocessing/automate_Elsa-Veronika-Munthe.py \
+            --input water_potability_raw/water_potability.csv \
+            --output_dir water_potability_preprocessing \
+            --test_size ${{ github.event.inputs.test_size || '0.2' }} \
+            --iqr_multiplier ${{ github.event.inputs.iqr_multiplier || '1.5' }}
+
+      - name: Verify Output Files
+        run: |
+          echo "=== Verifikasi Output ==="
+          ls -lh water_potability_preprocessing/
+          echo ""
+          echo "=== Preview water_potability_train.csv ==="
+          head -5 water_potability_preprocessing/water_potability_train.csv
+          echo ""
+          echo "=== Jumlah baris ==="
+          wc -l water_potability_preprocessing/*.csv
+
+      - name: Commit & Push Preprocessed Dataset
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add water_potability_preprocessing/
+          git diff --staged --quiet || git commit -m "chore: update preprocessed dataset [skip ci] - $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
